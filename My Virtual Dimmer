@@ -1,0 +1,79 @@
+metadata {
+    definition (name: "My Virtual Dimmer", namespace: "googlejam", author: "Glenn Goodman") {
+        capability "Actuator"
+		capability "Sensor"
+        capability "Switch"
+        capability "Switch Level"
+        
+    	command "initialize"
+
+    	attribute "lastLevel", "number"
+}
+    
+	preferences {
+		section {
+			input (
+				type: "bool",
+				name: "enableDebugLogging",
+				title: "Enable Debug Logging?",
+				required: true,
+				defaultValue: true
+			)
+		}
+	}
+}
+
+
+def log (msg) {
+	if (enableDebugLogging) {
+		log.debug msg
+	}
+}
+
+
+def parse(String description) {
+}
+
+def on() {
+    log.info "${device.displayName}.on()"
+    log "${device.displayName}.on()"
+//    def lastLevel = device.currentValue(level)
+    sendEvent(name: "switch", value: "on", isStateChange: true)
+//    sendEvent(name: "level", value: lastLevel, isStateChange: true)
+
+}
+
+def off() {
+	log "${device.displayName}.off()"
+    sendEvent(name: "switch", value: "off", isStateChange: true)
+}
+
+
+def setLevel(value) {
+    sendEvent(name: "level", value: value, isStateChange: true)
+    if (value == 0)
+        off()
+    else if (device.currentValue("switch") == "off")
+        on()
+    log "${device.displayName}.setLevel($value)"
+
+}
+
+def installed() {
+	log.info "${device.displayName}.installed()"
+	
+	initialize()
+}
+
+def uninstalled() {
+	log.info "${device.displayName}.uninstalled()"
+}
+
+def initialize() {
+	log.info "${device.displayName}.initialize()"
+	
+	// Default values
+	sendEvent(name: "switch", value: "off", isStateChange: true)
+	sendEvent(name: "level", value: "0", isStateChange: true)
+	sendEvent(name: "lastLevel", value: "0", isStateChange: true)
+}
